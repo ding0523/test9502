@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+        <!--扫描包-->
+        <context:component-scan base-package="cn.kgc.service"></context:component-scan>
+        <!--引入数据源-->
+        <import resource="classpath:application_dao.xml"></import>
+        <!--创建SqlSessionFactory对象-->
+        <bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean">
+            <!--注入数据源-->
+            <property name="dataSource" ref="dataSource"></property>
+        </bean>
+        <!--映射文件包扫描-->
+        <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="basePackage" value="cn.kgc.dao"></property>
+        </bean>
+
+        <!--创建事物管理器对象-->
+        <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+            <!--注入数据源-->
+            <property name="dataSource" ref="dataSource"></property>
+        </bean>
+        <!--设置通知-->
+        <tx:advice id="advice" transaction-manager="transactionManager">
+            <tx:attributes>
+                <tx:method name="find*" read-only="true" propagation="SUPPORTS"/>
+                <tx:method name="query*" read-only="true" propagation="SUPPORTS"/>
+                <tx:method name="get*" read-only="true" propagation="SUPPORTS"/>
+                <tx:method name="*" read-only="false" propagation="REQUIRED"/>
+            </tx:attributes>
+        </tx:advice>
+        <!--配置切面-->
+        <aop:config>
+            <aop:advisor advice-ref="advice" pointcut="execution(* cn.kgc.service.impl.*.*(..))"></aop:advisor>
+        </aop:config>
+</beans>
